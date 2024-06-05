@@ -1,0 +1,115 @@
+.sidebar {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    background-color: #222831;
+    padding: 10px;
+    height: 100vh; /* Full height of the viewport */
+    position: fixed; /* Sticks the sidebar to the left */
+    overflow-y: auto; /* Enables vertical scrolling */
+  }
+  
+  .links {
+    display: flex;
+    flex-direction: column;
+    size: 20px;
+    padding: 10px;
+  }
+  
+  .greet p {
+    margin: 0;
+    font-size: 20px;
+    padding: 20px;
+    text-align: center;
+    color: #fff;
+  }
+  
+  .links li {
+    list-style-type: none;
+  }
+  
+  .button,
+  .button1,
+  .button2,
+  .button3 {
+    display: flex; /* Use flexbox */
+    align-items: center; /* Align items vertically in the center */
+    padding: 10px;
+    text-decoration: none;
+    color: #fff;
+    background-color: #31363F;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+  
+  .button1 {
+    color: #379237;
+  }
+  
+  .button2 {
+    color: red;
+  }
+  
+  .button3 {
+    color: #fff;
+    background-color: #444;
+  }
+  
+  .button svg,
+  .button1 svg,
+  .button2 svg,
+  .button3 svg {
+    margin-right: 8px; /* Space between icon and text */
+  }
+  
+  .button:hover,
+  .button1:hover,
+  .button2:hover,
+  .button3:hover {
+    background-color: #3a3f48;
+  }
+  
+  /* Media Queries for Responsiveness */
+  @media (max-width: 768px) {
+    .sidebar {
+      width: 150px; /* Adjust sidebar width for smaller screens */
+    }
+    
+    .button,
+    .button1,
+    .button2,
+    .button3 {
+      font-size: 14px; /* Adjust button font size */
+    }
+    
+    .greet p {
+      font-size: 18px; /* Adjust greet text font size */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .sidebar {
+      width: 100px; /* Further adjust sidebar width for very small screens */
+    }
+    
+    .button,
+    .button1,
+    .button2,
+    .button3 {
+      font-size: 12px; /* Further adjust button font size */
+      padding: 8px; /* Adjust button padding */
+    }
+    
+    .greet p {
+      font-size: 16px; /* Further adjust greet text font size */
+    }
+    
+    .button svg,
+    .button1 svg,
+    .button2 svg,
+    .button3 svg {
+      margin-right: 4px; /* Reduce space between icon and text */
+    }
+  }
+  

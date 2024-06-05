@@ -1,0 +1,7 @@
+.stud_search_table button{
+    background-color: #008DDA;
+}
+
+.stud_search_table button:hover{
+    background-color: #67C6E3;
+}

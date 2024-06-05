@@ -1,0 +1,78 @@
+.search_stud{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.searching_stud {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Adds space between each child element */
+    width: 100%;
+    max-width: 400px; /* Optional: Limits the width of the form */
+}
+
+.searching_stud p{
+    text-align: center; 
+}
+
+.searching_stud div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .searching_stud label {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .searching_stud input {
+    padding: 8px;
+    border: 0px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .stud_search_button{
+    padding: 20px;
+  }
+
+  .stud_search_button button{
+    background-color: #008DDA;
+  }
+
+  .stud_search_button button:hover{
+    background-color: #67C6E3;
+  }
+
+  .stud_search_table {
+    border-radius: 8px;
+    margin-top: 20px;
+    width: 93%;
+    overflow-x: auto; /* Makes the table scrollable on small screens */
+  }
+  
+  .stud_search_table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .stud_search_table th,
+  .stud_search_table td {
+    padding: 10px;
+    border: 0px solid #7D7C7C;
+    text-align: center;
+  }
+  
+  .stud_search_table th {
+    background-color: #222831;
+    color: white;
+  }
+  
+  .stud_search_table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .stud_search_table tbody tr:hover {
+    background-color: #191717;
+  }

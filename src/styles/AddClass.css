@@ -1,0 +1,64 @@
+.addclass{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.class_table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .class_table th,
+  .class_table td {
+    padding: 10px;
+    border: 0px solid #7D7C7C;
+    text-align: center;
+  }
+  
+  .class_table th {
+    background-color: #222831;
+    color: white;
+  }
+  
+  .class_table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .class_table tbody tr:hover {
+    background-color: #191717;
+  }
+
+  .new_class{
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Adds space between each child element */
+  width: 100%;
+  max-width: 400px; /* Optional: Limits the width of the form */
+  }
+
+  .new_class div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .new_class label {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .new_class input {
+    padding: 8px;
+    border: 0px solid #ccc;
+    border-radius: 4px;
+  }
+
+  .class_submit button{
+    margin-top: 20px;
+    background-color: #379237;
+  }
+
+  .class_submit button:hover{
+    background-color: #54B435;
+  }

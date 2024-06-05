@@ -1,0 +1,34 @@
+.newfee {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .fee_payment {
+    margin-top: 50px;
+    display: flex;
+    flex-wrap: wrap; /* Allows elements to wrap to the next row */
+    gap: 10px; /* Adds space between each child element */
+    justify-content: center; /* Centers the elements horizontally */
+    width: 100%;
+    max-width: 600px; /* Optional: Adjust width as needed */
+  }
+  
+  .fee_payment div {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .fee_payment label {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .fee_payment input {
+    padding: 8px;
+    border: 0px solid #ccc; /* Added border for clarity */
+    border-radius: 4px;
+    width: 150px; /* Adjust width as needed */
+  }
+  
