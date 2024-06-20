@@ -1,7 +1,10 @@
 use tauri::command;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::mysql::MySqlPool;
+use sqlx::FromRow;
 use sqlx::Row;
+use sqlx::mysql::MySql;
+use tokio;
 
 #[derive(Serialize)]
 struct Class {
@@ -9,17 +12,9 @@ struct Class {
     class_name: String,
 }
 
-#[derive(Serialize)]
-struct Student {
-    s_no: i32,
-    name: String,
-    dob: String,
-    scholar_number: i32,
-    class_name: String,
-    father_name: String,
-    mother_name: String,
-    address: String,
-    mobile_num: String,
+#[derive(Debug, Serialize, Deserialize)]
+struct SearchCriteria {
+    name: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -31,6 +26,65 @@ struct Fee {
     exam_fee: i32,
     annual_charges: i32,
     total_fee: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+struct Student {
+    name: String,
+    dob: String, // Assuming dob is stored as a string in "YYYY-MM-DD" format
+    scholar_number: i32,
+    ClassName: String,
+    father_name: String,
+    mother_name: String,
+    address: String,
+    mobile_num: String,
+}
+
+#[command]
+async fn update_student(updated_student: Student) -> Result<(), String> {
+    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024")
+        .await
+        .map_err(|e| e.to_string())?;
+
+    sqlx::query("UPDATE Students SET name = ?, dob = ?, ClassName = ?, father_name = ?, mother_name = ?, address = ?, mobile_num = ? WHERE scholar_number = ?")
+        .bind(&updated_student.name)
+        .bind(&updated_student.dob)
+        .bind(&updated_student.ClassName)
+        .bind(&updated_student.father_name)
+        .bind(&updated_student.mother_name)
+        .bind(&updated_student.address)
+        .bind(&updated_student.mobile_num)
+        .bind(&updated_student.scholar_number)  // Use scholar_number as unique identifier
+        .execute(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+async fn search_students(criteria: SearchCriteria) -> Result<Vec<Student>, String> {
+    // Connect to the database
+    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024")
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // Prepare the SQL query
+    let query = "SELECT name, dob, scholar_number, ClassName, father_name, mother_name, address, mobile_num
+                 FROM Students
+                 WHERE name LIKE ?";
+
+    // Prepare the search parameter
+    let search_param = format!("%{}%", criteria.name.unwrap_or_default());
+
+    // Execute the query and fetch results
+    let query_result = sqlx::query_as::<MySql, Student>(query)
+        .bind(search_param)
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(query_result)
 }
 
 #[command]
@@ -49,7 +103,7 @@ async fn fetch_classes() -> Result<Vec<Class>, String> {
     Ok(classes)
 }
 
-#[command] // Add this attribute
+#[command]
 async fn add_class(class_name: String) -> Result<(), String> {
     let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024").await.map_err(|e| e.to_string())?;
     sqlx::query("INSERT INTO Classes (ClassName) VALUES (?)")
@@ -58,29 +112,6 @@ async fn add_class(class_name: String) -> Result<(), String> {
         .await
         .map_err(|e| e.to_string())?;
     Ok(())
-}
-
-#[command]
-async fn fetch_students() -> Result<Vec<Student>, String> {
-    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024").await.map_err(|e| e.to_string())?;
-    let rows = sqlx::query("SELECT S_no, name, dob, scholar_number, ClassName, father_name, mother_name, address, mobile_num FROM Students")
-        .fetch_all(&pool).await.map_err(|e| e.to_string())?;
-
-    let students: Vec<Student> = rows.iter().map(|row| {
-        Student {
-            s_no: row.get("S_no"),
-            name: row.get("name"),
-            dob: row.get("dob"),
-            scholar_number: row.get("scholar_number"),
-            class_name: row.get("ClassName"),
-            father_name: row.get("father_name"),
-            mother_name: row.get("mother_name"),
-            address: row.get("address"),
-            mobile_num: row.get("mobile_num"),
-        }
-    }).collect();
-
-    Ok(students)
 }
 
 #[command]
@@ -104,9 +135,35 @@ async fn fetch_fees() -> Result<Vec<Fee>, String> {
     Ok(fees)
 }
 
+#[command]
+async fn add_student(student: Student) -> Result<(), String> {
+    // Connect to the database
+    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024")
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // Perform insertion query
+    sqlx::query("INSERT INTO Students (name, dob, scholar_number, ClassName, father_name, mother_name, address, mobile_num) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+        .bind(&student.name)
+        .bind(&student.dob)
+        .bind(&student.scholar_number)
+        .bind(&student.ClassName)
+        .bind(&student.father_name)
+        .bind(&student.mother_name)
+        .bind(&student.address)
+        .bind(&student.mobile_num)
+        .execute(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![fetch_classes, fetch_students, fetch_fees, add_class])
+        .invoke_handler(tauri::generate_handler![fetch_classes, fetch_fees, add_class, add_student, search_students, update_student])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

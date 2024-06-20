@@ -68,11 +68,7 @@
     background-color: #222831;
     color: white;
   }
-  
-  .stud_search_table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
-  }
-  
+
   .stud_search_table tbody tr:hover {
     background-color: #191717;
   }

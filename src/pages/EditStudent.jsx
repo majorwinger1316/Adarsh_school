@@ -1,7 +1,51 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/tauri';
+import EditModal from './EditModal'; // Import EditModal component
 import "../styles/EditStudent.css"
 
 function EditStudent() {
+    const [searchName, setSearchName] = useState('');
+    const [students, setStudents] = useState([]);
+    const [filteredStudents, setFilteredStudents] = useState([]);
+    const [editStudentData, setEditStudentData] = useState(null); // State to hold data for editing
+
+    useEffect(() => {
+        fetchStudents();
+    }, []); // Fetch students when component mounts
+
+    const fetchStudents = async () => {
+        try {
+            const result = await invoke('search_students', { criteria: { name: searchName } });
+            setStudents(result);
+            setFilteredStudents(result);
+        } catch (error) {
+            console.error('Error searching students:', error);
+        }
+    };
+
+    const handleSearch = async () => {
+        fetchStudents();
+    };
+
+    const handleEdit = (student) => {
+        setEditStudentData(student);
+    };
+
+    const handleUpdateStudent = async (updatedData) => {
+        try {
+            await invoke('update_student', updatedData);
+            console.log('Student updated successfully');
+            fetchStudents(); // Refresh student list after update
+            setEditStudentData(null); // Clear edit data after update
+        } catch (error) {
+            console.error('Error updating student:', error);
+        }
+    };
+
+    const closeModal = () => {
+        setEditStudentData(null);
+    };
+
     return (
         <div className='search_stud'>
             <div className='title'>
@@ -9,22 +53,16 @@ function EditStudent() {
             </div>
             <div className='searching_stud'>
                 <div className='search_name'>
-                <label>Search using Name:</label>
-                <input type="text" />
+                    <label>Search using Name:</label>
+                    <input
+                        type="text"
+                        value={searchName}
+                        onChange={(e) => setSearchName(e.target.value)}
+                    />
                 </div>
-                <p>OR</p>
-                <div className='search_scholar'>
-                <label>Search using Scholar Number:</label>
-                <input type="number" />
+                <div className='stud_search_button'>
+                    <button onClick={handleSearch}>Search</button>
                 </div>
-                <p>OR</p>
-                <div className='search_DOB'>
-                <label>Search using DOB:</label>
-                <input type="date" />
-                </div>
-            </div>
-            <div className='stud_search_button'>
-                <button>Search</button>
             </div>
             <div className='stud_search_table'>
                 <table>
@@ -43,25 +81,40 @@ function EditStudent() {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Akshat Dutt Kaushik</td>
-                            <td>13/01/2003</td>
-                            <td>12003</td>
-                            <td>5</td>
-                            <td>Hemendra Dutt Kaushik</td>
-                            <td>Anju Kaushik</td>
-                            <td>11/223 Souter Ganj, Kanpur</td>
-                            <td>9455276501</td>
-                            <td>
-                                <button>Edit</button>
-                            </td>
-                        </tr>
+                        {filteredStudents.length > 0 ? (
+                            filteredStudents.map((student, index) => (
+                                <tr key={index}>
+                                    <td>{index + 1}</td>
+                                    <td>{student.name}</td>
+                                    <td>{student.dob}</td>
+                                    <td>{student.scholar_number}</td>
+                                    <td>{student.ClassName}</td>
+                                    <td>{student.father_name}</td>
+                                    <td>{student.mother_name}</td>
+                                    <td>{student.address}</td>
+                                    <td>{student.mobile_num}</td>
+                                    <td>
+                                        <button onClick={() => handleEdit(student)}>Edit</button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="10">No records found</td>
+                            </tr>
+                        )}
                     </tbody>
                 </table>
             </div>
+            {editStudentData && (
+                <EditModal
+                    student={editStudentData}
+                    onUpdate={handleUpdateStudent}
+                    onClose={closeModal}
+                />
+            )}
         </div>
-      )
+    );
 }
 
-export default EditStudent
+export default EditStudent;
