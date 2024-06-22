@@ -34,9 +34,10 @@ function EditStudent() {
     const handleUpdateStudent = async (updatedData) => {
         try {
             await invoke('update_student', updatedData);
-            console.log('Student updated successfully');
             fetchStudents(); // Refresh student list after update
             setEditStudentData(null); // Clear edit data after update
+            handleModalClose();
+            alert('Student record updated successfully!');
         } catch (error) {
             console.error('Error updating student:', error);
         }
@@ -60,9 +61,9 @@ function EditStudent() {
                         onChange={(e) => setSearchName(e.target.value)}
                     />
                 </div>
-                <div className='stud_search_button'>
+            </div>
+            <div className='stud_search_button'>
                     <button onClick={handleSearch}>Search</button>
-                </div>
             </div>
             <div className='stud_search_table'>
                 <table>

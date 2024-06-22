@@ -29,11 +29,11 @@ function SideBar() {
         <li><Link to="/stud_search" className='button'><PersonSearchIcon/>Search for a Student</Link></li>
         <li><Link to="/stud_edit" className='button'><EditIcon/>Edit a Student record</Link></li>
         <li><Link to="/new_fee" className='button1'><FeedIcon/>Record Fee Payment</Link></li>
-        <li><Link to="/edit_fee" className='button'><EditNoteIcon/>Edit a Fee Payment</Link></li>
         <li><Link to="/search_fee" className='button'><FindInPageIcon/>Search a Fee Payment</Link></li>
+        <li><Link to="/edit_fee" className='button'><EditNoteIcon/>Edit a Fee Payment</Link></li>
         <li><Link to="/class_add" className='button1'><NoteAddIcon/>Add a Class</Link></li>
-        <li><Link to="/class_edit" className='button'><BorderColorIcon/>Edit Class name</Link></li>
         <li><Link to="/class_search" className='button'><PageviewIcon/>Find Class Records</Link></li>
+        <li><Link to="/class_edit" className='button'><BorderColorIcon/>Edit Class name</Link></li>
         <li><Link to="/print_fee" className='button1'><PrintIcon/>Print Fee slip</Link></li>
         <li><Link to="/stud_delete" className='button2'><PersonRemoveIcon/>Delete Student Record</Link></li>
         <li><Link to="/delete_fee" className='button2'><DeleteIcon/>Delete a Fee Record</Link></li>

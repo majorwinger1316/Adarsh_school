@@ -3,8 +3,9 @@ use serde::{Deserialize, Serialize};
 use sqlx::mysql::MySqlPool;
 use sqlx::FromRow;
 use sqlx::Row;
+use dotenv::dotenv;
+use std::env;
 use sqlx::mysql::MySql;
-use tokio;
 
 #[derive(Serialize)]
 struct Class {
@@ -17,15 +18,15 @@ struct SearchCriteria {
     name: Option<String>,
 }
 
-#[derive(Serialize)]
-struct Fee {
-    invoice_number: i32,
+#[derive(Deserialize)]
+struct FeeDetails {
     scholar_number: i32,
     admission_fee: i32,
     tution_fee: i32,
     exam_fee: i32,
     annual_charges: i32,
     total_fee: i32,
+    date: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
@@ -40,9 +41,42 @@ struct Student {
     mobile_num: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+struct FeeRecord {
+    invoice_number: i32,
+    scholar_number: i32,
+    admission_fee: i32,
+    tution_fee: i32,
+    exam_fee: i32,
+    annual_charges: i32,
+    total_fee: i32,
+    date: String
+}
+
+#[command]
+async fn add_fee(fee_details: FeeDetails) -> Result<(), String> {
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap())
+        .await
+        .map_err(|e| e.to_string())?;
+    
+    sqlx::query("INSERT INTO Fees (scholar_number, Admission_fee, Tution_fee, Exam_fee, Annual_charges, Total_fee, date) VALUES (?, ?, ?, ?, ?, ?, ?)")
+        .bind(fee_details.scholar_number)
+        .bind(fee_details.admission_fee)
+        .bind(fee_details.tution_fee)
+        .bind(fee_details.exam_fee)
+        .bind(fee_details.annual_charges)
+        .bind(fee_details.total_fee)
+        .bind(fee_details.date)
+        .execute(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 #[command]
 async fn update_student(updated_student: Student) -> Result<(), String> {
-    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024")
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap())
         .await
         .map_err(|e| e.to_string())?;
 
@@ -64,20 +98,16 @@ async fn update_student(updated_student: Student) -> Result<(), String> {
 
 #[command]
 async fn search_students(criteria: SearchCriteria) -> Result<Vec<Student>, String> {
-    // Connect to the database
-    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024")
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap())
         .await
         .map_err(|e| e.to_string())?;
 
-    // Prepare the SQL query
     let query = "SELECT name, dob, scholar_number, ClassName, father_name, mother_name, address, mobile_num
                  FROM Students
                  WHERE name LIKE ?";
 
-    // Prepare the search parameter
     let search_param = format!("%{}%", criteria.name.unwrap_or_default());
 
-    // Execute the query and fetch results
     let query_result = sqlx::query_as::<MySql, Student>(query)
         .bind(search_param)
         .fetch_all(&pool)
@@ -89,7 +119,7 @@ async fn search_students(criteria: SearchCriteria) -> Result<Vec<Student>, Strin
 
 #[command]
 async fn fetch_classes() -> Result<Vec<Class>, String> {
-    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024").await.map_err(|e| e.to_string())?;
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap()).await.map_err(|e| e.to_string())?;
     let rows = sqlx::query("SELECT S_no, ClassName FROM Classes")
         .fetch_all(&pool).await.map_err(|e| e.to_string())?;
 
@@ -105,7 +135,7 @@ async fn fetch_classes() -> Result<Vec<Class>, String> {
 
 #[command]
 async fn add_class(class_name: String) -> Result<(), String> {
-    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024").await.map_err(|e| e.to_string())?;
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap()).await.map_err(|e| e.to_string())?;
     sqlx::query("INSERT INTO Classes (ClassName) VALUES (?)")
         .bind(class_name)
         .execute(&pool)
@@ -115,34 +145,11 @@ async fn add_class(class_name: String) -> Result<(), String> {
 }
 
 #[command]
-async fn fetch_fees() -> Result<Vec<Fee>, String> {
-    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024").await.map_err(|e| e.to_string())?;
-    let rows = sqlx::query("SELECT invoice_number, scholar_number, Admission_fee, Tution_fee, Exam_fee, Annual_charges, Total_fee FROM Fees")
-        .fetch_all(&pool).await.map_err(|e| e.to_string())?;
-
-    let fees: Vec<Fee> = rows.iter().map(|row| {
-        Fee {
-            invoice_number: row.get("invoice_number"),
-            scholar_number: row.get("scholar_number"),
-            admission_fee: row.get("Admission_fee"),
-            tution_fee: row.get("Tution_fee"),
-            exam_fee: row.get("Exam_fee"),
-            annual_charges: row.get("Annual_charges"),
-            total_fee: row.get("Total_fee"),
-        }
-    }).collect();
-
-    Ok(fees)
-}
-
-#[command]
 async fn add_student(student: Student) -> Result<(), String> {
-    // Connect to the database
-    let pool = MySqlPool::connect("mysql://root:Football@1316@localhost:3306/2024")
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap())
         .await
         .map_err(|e| e.to_string())?;
 
-    // Perform insertion query
     sqlx::query("INSERT INTO Students (name, dob, scholar_number, ClassName, father_name, mother_name, address, mobile_num) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         .bind(&student.name)
         .bind(&student.dob)
@@ -159,11 +166,79 @@ async fn add_student(student: Student) -> Result<(), String> {
     Ok(())
 }
 
+#[command]
+async fn fetch_fee_by_scholar_number(scholar_number: i32) -> Result<Vec<FeeRecord>, String> {
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap()).await.map_err(|e| e.to_string())?;
 
+    let fee_records = sqlx::query_as!(
+        FeeRecord,
+        "SELECT invoice_number, scholar_number, admission_fee, tution_fee, exam_fee, annual_charges, total_fee, date
+         FROM Fees WHERE scholar_number = ?",
+        scholar_number
+    )
+    .fetch_all(&pool)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    Ok(fee_records)
+}
+
+#[command]
+async fn update_fee(updated_fee: FeeDetails) -> Result<(), String> {
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap())
+        .await
+        .map_err(|e| e.to_string())?;
+
+    sqlx::query("UPDATE Fees SET Admission_fee = ?, Tution_fee = ?, Exam_fee = ?, Annual_charges = ?, Total_fee = ? WHERE scholar_number = ? AND date = ?")
+        .bind(updated_fee.admission_fee)
+        .bind(updated_fee.tution_fee)
+        .bind(updated_fee.exam_fee)
+        .bind(updated_fee.annual_charges)
+        .bind(updated_fee.total_fee)
+        .bind(updated_fee.scholar_number)
+        .bind(updated_fee.date)
+        .execute(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+async fn fetch_students_by_class(criteria: SearchCriteria) -> Result<Vec<Student>, String> {
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap())
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let query = "SELECT name, dob, scholar_number, ClassName, father_name, mother_name, address, mobile_num
+                 FROM Students
+                 WHERE ClassName LIKE ?";
+
+    let search_param = format!("%{}%", criteria.name.unwrap_or_default());
+
+    let query_result = sqlx::query_as::<MySql, Student>(query)
+        .bind(search_param)
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(query_result)
+}
 
 fn main() {
+    dotenv().ok(); // Load environment variables from .env file
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![fetch_classes, fetch_fees, add_class, add_student, search_students, update_student])
+        .invoke_handler(tauri::generate_handler![
+            fetch_classes, 
+            add_class, 
+            add_student, 
+            search_students, 
+            update_student, 
+            add_fee,
+            fetch_fee_by_scholar_number,
+            update_fee,
+            fetch_students_by_class
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
 import "../styles/NewStudent.css";
+import ConfirmationDialog from '../Components/ConfirmationDialog'; // Import the custom confirmation dialog
 
 function NewStudent() {
     const [classNames, setClassNames] = useState([]);
+    const [showDialog, setShowDialog] = useState(false); // State to show/hide the dialog
+    const [newClassName, setNewClassName] = useState(''); // State to hold the new class name input
+    const [pendingClassName, setPendingClassName] = useState(''); // State to hold the class name pending confirmation
     const [formData, setFormData] = useState({
         name: '',
         dob: '',
@@ -45,21 +49,34 @@ function NewStudent() {
         }
     };
 
-    const handleSubmit = async () => {
-        if (window.confirm('Are you sure you want to submit the form?')) {
-            try {
-                const formattedData = {
-                    ...formData,
-                    scholar_number: parseInt(formData.scholar_number, 10),
-                    mobile_num: formData.mobile_num
-                };
-                await invoke('add_student', { student: formattedData });
-                alert('Student registered successfully!');
-            } catch (error) {
-                console.error('Error registering student:', error);
-                alert('Failed to register student.');
-            }
+    const handleAddClass = async () => {
+        if (newClassName.trim() === '') {
+            return; // Don't add if the input is empty
         }
+
+        setPendingClassName(newClassName); // Set the pending class name
+        setShowDialog(true); // Show the confirmation dialog
+    };
+
+    const handleSubmit = async () => {
+        setShowDialog(false); // Hide the dialog
+        try {
+            const formattedData = {
+                ...formData,
+                scholar_number: parseInt(formData.scholar_number, 10),
+                mobile_num: formData.mobile_num
+            };
+            await invoke('add_student', { student: formattedData });
+            alert('Student registered successfully!');
+        } catch (error) {
+            console.error('Error registering student:', error);
+            alert('Failed to register student.');
+        }
+    };
+
+    const handleCancelAddClass = () => {
+        setShowDialog(false); // Hide the dialog
+        setPendingClassName(''); // Clear the pending class name
     };
 
     return (
@@ -164,6 +181,13 @@ function NewStudent() {
             <div className='stud_submit'>
                 <button onClick={handleSubmit}>Register</button>
             </div>
+            {showDialog && (
+                <ConfirmationDialog
+                    message={`Do you want to add the class "${pendingClassName}"?`}
+                    onConfirm={handleSubmit}
+                    onCancel={handleCancelAddClass}
+                />
+            )}
         </div>
     );
 }

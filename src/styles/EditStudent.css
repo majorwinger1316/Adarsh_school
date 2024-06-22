@@ -17,6 +17,7 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    overflow-x: auto; /* Makes the table scrollable on small screens */
 }
 
 .modal-content {

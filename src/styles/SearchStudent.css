@@ -35,6 +35,8 @@
 
   .stud_search_button{
     padding: 20px;
+    justify-content: center; /* Center align the button */
+    display: flex;
   }
 
   .stud_search_button button{
@@ -42,7 +44,7 @@
   }
 
   .stud_search_button button:hover{
-    background-color: #67C6E3;
+    background-color: #0056b3;
   }
 
   .stud_search_table {

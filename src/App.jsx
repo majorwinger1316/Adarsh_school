@@ -11,6 +11,7 @@ import EditFee from './pages/EditFee';
 import EditStudent from './pages/EditStudent';
 import SearchFee from './pages/SearchFee';
 import AddClass from './pages/AddClass';
+import ClassSearch from './pages/ClassSearch';
 import './App.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
             <Route path="/new_fee" element={<NewFee />} />
             <Route path="/edit_fee" element={<EditFee />} />
             <Route path="/class_add" element={<AddClass />} />
+            <Route path="/class_search" element={<ClassSearch />} />
           </Routes>
         </div>
       </div>
