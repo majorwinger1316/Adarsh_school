@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
+import "../styles/DeleteFee.css"
 
-function SearchFee() {
+function DeleteFee() {
     const [scholarNumber, setScholarNumber] = useState('');
     const [feeRecords, setFeeRecords] = useState([]);
+    const [editFeeData, setEditFeeData] = useState(null);
 
     const handleSearch = async () => {
         try {
@@ -15,13 +17,13 @@ function SearchFee() {
         }
     };
 
-    return (
-        <div className='edit_fee'>
-          <div className='title'>
-            <p>Search Fee Record</p>
-          </div>
-          <div className='searching_stud'>
-          <div className='search_scholar'>
+  return (
+    <div className='delete_fee'>
+      <div className='title'>
+        <p>Delete a Fee Record</p>
+      </div>
+      <div className='searching_stud'>
+                <div className='search_scholar'>
                     <label>Search using Scholar Number:</label>
                     <input
                         type="number"
@@ -29,11 +31,11 @@ function SearchFee() {
                         onChange={(e) => setScholarNumber(e.target.value)}
                     />
                 </div>
-                </div>
-                <div className='stud_search_button'>
-                    <button onClick={handleSearch}>Search</button>
-                </div>
-                <div className='stud_search_table'>
+            </div>
+            <div className='stud_search_button'>
+                <button onClick={handleSearch}>Search</button>
+            </div>
+            <div className='fee_delete_table'>
                 <table>
                     <thead>
                         <tr>
@@ -46,6 +48,7 @@ function SearchFee() {
                             <th>Annual Charges</th>
                             <th>Total</th>
                             <th>Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,14 +63,16 @@ function SearchFee() {
                                 <td>{record.annual_charges}</td>
                                 <td>{record.total_fee}</td>
                                 <td>{record.date}</td>
+                                <td>
+                                    <button onClick={() => handleEdit(record)}>Delete</button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-                </div>
-    
-        </div>
-      )
+            </div>
+    </div>
+  )
 }
 
-export default SearchFee
+export default DeleteFee

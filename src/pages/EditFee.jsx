@@ -55,7 +55,7 @@ function EditFee() {
             <div className='stud_search_button'>
                 <button onClick={handleSearch}>Search</button>
             </div>
-            <div className='fee_search_table'>
+            <div className='stud_search_table'>
                 <table>
                     <thead>
                         <tr>

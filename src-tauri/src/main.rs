@@ -9,8 +9,13 @@ use sqlx::mysql::MySql;
 
 #[derive(Serialize)]
 struct Class {
-    s_no: i32,
     class_name: String,
+}
+
+#[derive(serde::Deserialize)]
+struct UpdateClassName {
+    old_class_name: String,
+    new_class_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -119,13 +124,31 @@ async fn search_students(criteria: SearchCriteria) -> Result<Vec<Student>, Strin
 
 #[command]
 async fn fetch_classes() -> Result<Vec<Class>, String> {
-    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap()).await.map_err(|e| e.to_string())?;
-    let rows = sqlx::query("SELECT S_no, ClassName FROM Classes")
-        .fetch_all(&pool).await.map_err(|e| e.to_string())?;
+    dotenv().ok();
+
+    let database_url = match env::var("DATABASE_URL") {
+        Ok(url) => url,
+        Err(_) => return Err("DATABASE_URL not set in .env file".to_string()),
+    };
+
+    let pool = match MySqlPool::connect(&database_url).await {
+        Ok(pool) => pool,
+        Err(e) => {
+            eprintln!("Failed to connect to the database: {}", e);
+            return Err("Failed to connect to the database".to_string());
+        }
+    };
+
+    let rows = match sqlx::query("SELECT ClassName FROM Classes").fetch_all(&pool).await {
+        Ok(rows) => rows,
+        Err(e) => {
+            eprintln!("Failed to fetch classes: {}", e);
+            return Err("Failed to fetch classes".to_string());
+        }
+    };
 
     let classes: Vec<Class> = rows.iter().map(|row| {
         Class {
-            s_no: row.get("S_no"),
             class_name: row.get("ClassName"),
         }
     }).collect();
@@ -225,6 +248,37 @@ async fn fetch_students_by_class(criteria: SearchCriteria) -> Result<Vec<Student
     Ok(query_result)
 }
 
+#[tauri::command]
+async fn update_class_name(update_details: UpdateClassName) -> Result<(), String> {
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap())
+        .await
+        .map_err(|e| e.to_string())?;
+
+    sqlx::query("UPDATE Classes SET ClassName = ? WHERE ClassName = ?")
+        .bind(&update_details.new_class_name)
+        .bind(&update_details.old_class_name)
+        .execute(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[command]
+async fn delete_student(scholar_number: i32) -> Result<(), String> {
+    let pool = MySqlPool::connect(&env::var("DATABASE_URL").unwrap())
+        .await
+        .map_err(|e| e.to_string())?;
+
+    sqlx::query("DELETE FROM Students WHERE scholar_number = ?")
+        .bind(scholar_number)
+        .execute(&pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
 fn main() {
     dotenv().ok(); // Load environment variables from .env file
     tauri::Builder::default()
@@ -237,7 +291,9 @@ fn main() {
             add_fee,
             fetch_fee_by_scholar_number,
             update_fee,
-            fetch_students_by_class
+            fetch_students_by_class,
+            update_class_name,
+            delete_student
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

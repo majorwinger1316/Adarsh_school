@@ -62,7 +62,7 @@
   .stud_search_table th,
   .stud_search_table td {
     padding: 10px;
-    border: 0px solid #7D7C7C;
+    border: 0.5px solid #4e4c4c;
     text-align: center;
   }
   
@@ -70,6 +70,8 @@
     background-color: #222831;
     color: white;
   }
+
+  .stud_search_table tr:nth-child(even) {background-color: #69696927;}
 
   .stud_search_table tbody tr:hover {
     background-color: #191717;

@@ -1,0 +1,7 @@
+.class_edit{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* Adjusts the spacing between elements */
+    padding: 20px;
+}

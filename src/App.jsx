@@ -12,6 +12,10 @@ import EditStudent from './pages/EditStudent';
 import SearchFee from './pages/SearchFee';
 import AddClass from './pages/AddClass';
 import ClassSearch from './pages/ClassSearch';
+import ClassEdit from './pages/ClassEdit';
+import DeleteStudent from './pages/DeleteStudent';
+import DeleteFee from './pages/DeleteFee';
+import NewSession from './pages/NewSession';
 import './App.css';
 
 function App() {
@@ -32,6 +36,10 @@ function App() {
             <Route path="/edit_fee" element={<EditFee />} />
             <Route path="/class_add" element={<AddClass />} />
             <Route path="/class_search" element={<ClassSearch />} />
+            <Route path="/class_edit" element={<ClassEdit />} />
+            <Route path="/stud_delete" element={<DeleteStudent />} />
+            <Route path="/delete_fee" element={<DeleteFee />} />
+            <Route path="/new_database" element={<NewSession />} />
           </Routes>
         </div>
       </div>

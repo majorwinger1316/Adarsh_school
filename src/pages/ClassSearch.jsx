@@ -1,10 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/tauri'; // Import Tauri invoke method
 import '../styles/ClassSearch.css';
 
 function ClassSearch() {
     const [className, setClassName] = useState('');
     const [filteredStudents, setFilteredStudents] = useState([]);
+    const [classNames, setClassNames] = useState([]);
+
+    // Fetch class names when component mounts
+    useEffect(() => {
+        async function fetchClassNames() {
+            try {
+                const result = await invoke('fetch_classes'); // Fetch class names from the backend
+                setClassNames(result.map(classObj => classObj.class_name));
+            } catch (error) {
+                console.error('Error fetching class names:', error);
+            }
+        }
+        fetchClassNames();
+    }, []); // Empty dependency array ensures useEffect runs only once on component mount
 
     const handleSearch = async () => {
         try {
@@ -23,11 +37,12 @@ function ClassSearch() {
             </div>
             <div className='new_class'>
                 <div>Class Name:</div>
-                <input 
-                    type="text" 
-                    value={className}
-                    onChange={(e) => setClassName(e.target.value)}
-                />
+                <select value={className} onChange={(e) => setClassName(e.target.value)}>
+                    <option value="">Select a class</option>
+                    {classNames.map((name, index) => (
+                        <option key={index} value={name}>{name}</option>
+                    ))}
+                </select>
             </div>
             <div className='class_submit'>
                 <button onClick={handleSearch}>Search</button>
