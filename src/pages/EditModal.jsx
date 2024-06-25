@@ -13,7 +13,7 @@ const handleUpdate = async () => {
     try {
         await invoke('update_student', {updatedStudent : editedData});
         console.log('Student updated successfully');
-        // Optionally close the modal or update local state
+        alert("Record has been updated");
     } catch (error) {
         console.error('Error updating student:', error);
     }

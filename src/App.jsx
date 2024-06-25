@@ -1,8 +1,8 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import About from './pages/About';
-import Home from './pages/home';
+import Home from './pages/Home';
 import SideBar from './Components/SideBar';
 import NewStudent from './pages/NewStudent';
 import SearchStudent from './pages/SearchStudent';
@@ -19,13 +19,25 @@ import NewSession from './pages/NewSession';
 import './App.css';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLogin = (selectedSchema) => {
+    setIsLoggedIn(true);
+    // Optionally, you can store the selected schema in localStorage or a state variable
+    // This depends on how you want to manage the selected schema throughout the app
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
   return (
     <Router>
       <div className="app">
-        <SideBar />
+        {isLoggedIn && <SideBar onLogout={handleLogout} />} {/* Render SideBar only if logged in */}
         <div className="content">
           <Routes>
-            <Route path='/' element={<Login/>}/>
+            <Route path='/' element={<Login onLogin={handleLogin} />} />
             <Route path="/about" element={<About />} />
             <Route path="/home" element={<Home />} />
             <Route path="/new_stud" element={<NewStudent />} />
@@ -40,6 +52,8 @@ function App() {
             <Route path="/stud_delete" element={<DeleteStudent />} />
             <Route path="/delete_fee" element={<DeleteFee />} />
             <Route path="/new_database" element={<NewSession />} />
+            {/* If not logged in, navigate to '/' */}
+            {!isLoggedIn && <Route path="*" element={<Navigate to="/" replace />} />}
           </Routes>
         </div>
       </div>

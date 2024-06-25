@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
-import "../styles/DeleteFee.css"
+import '../styles/DeleteFee.css';
 
 function DeleteFee() {
     const [scholarNumber, setScholarNumber] = useState('');
     const [feeRecords, setFeeRecords] = useState([]);
-    const [editFeeData, setEditFeeData] = useState(null);
 
     const handleSearch = async () => {
         try {
@@ -17,12 +16,25 @@ function DeleteFee() {
         }
     };
 
-  return (
-    <div className='delete_fee'>
-      <div className='title'>
-        <p>Delete a Fee Record</p>
-      </div>
-      <div className='searching_stud'>
+    const handleDelete = async (invoiceNumber) => {
+        try {
+            await invoke('delete_fee', {invoiceNumber: invoiceNumber}); // Ensure 'invoiceNumber' is correctly passed
+            // After deletion, refresh the fee records list or update state accordingly
+            const updatedRecords = feeRecords.filter(record => record.invoice_number !== invoiceNumber);
+            setFeeRecords(updatedRecords);
+            alert('Fee record deleted successfully.');
+        } catch (error) {
+            console.error('Error deleting fee record:', error);
+            alert('Failed to delete fee record.');
+        }
+    };
+
+    return (
+        <div className='delete_fee'>
+            <div className='title'>
+                <p>Delete a Fee Record</p>
+            </div>
+            <div className='searching_stud'>
                 <div className='search_scholar'>
                     <label>Search using Scholar Number:</label>
                     <input
@@ -64,15 +76,15 @@ function DeleteFee() {
                                 <td>{record.total_fee}</td>
                                 <td>{record.date}</td>
                                 <td>
-                                    <button onClick={() => handleEdit(record)}>Delete</button>
+                                    <button onClick={() => handleDelete(record.invoice_number)}>Delete</button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
-    </div>
-  )
+        </div>
+    );
 }
 
-export default DeleteFee
+export default DeleteFee;

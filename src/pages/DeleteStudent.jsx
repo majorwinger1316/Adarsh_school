@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
-import "../styles/DeleteStudent.css"
+import "../styles/DeleteStudent.css";
+import ConfirmationDialog from '../Components/ConfirmationDialog'; // Adjust the import path if necessary
 
 function DeleteStudent() {
     const [searchName, setSearchName] = useState('');
     const [filteredStudents, setFilteredStudents] = useState([]);
     const [students, setStudents] = useState([]);
+    const [showDialog, setShowDialog] = useState(false);
+    const [studentToDelete, setStudentToDelete] = useState(null); // Track which student to delete
 
     useEffect(() => {
         fetchStudents();
@@ -26,25 +29,32 @@ function DeleteStudent() {
     };
 
     const handleDelete = async (scholarNumber) => {
+        setStudentToDelete(scholarNumber);
+        setShowDialog(true);
+    };
+
+    const handleConfirmDelete = async () => {
         try {
-            const confirmDelete = window.confirm('Are you sure you want to delete this student record?');
-            if (confirmDelete) {
-                await invoke('delete_student', { scholarNumber });
-                // After deletion, fetch students again to update the list
-                fetchStudents();
-            }
+            await invoke('delete_student', { scholarNumber: studentToDelete });
+            setShowDialog(false);
+            fetchStudents(); // Refresh the student list after deletion
         } catch (error) {
             console.error('Error deleting student:', error);
             alert('Failed to delete student.');
         }
     };
 
-  return (
-    <div className='delete_student'>
-        <div className='title'>
-            <p>Delete a Student Record</p>
-        </div>
-        <div className='searching_stud'>
+    const handleCancelDelete = () => {
+        setShowDialog(false);
+        setStudentToDelete(null); // Clear the studentToDelete state
+    };
+
+    return (
+        <div className='delete_student'>
+            <div className='title'>
+                <p>Delete a Student Record</p>
+            </div>
+            <div className='searching_stud'>
                 <div className='search_name'>
                     <label>Search using Name:</label>
                     <input
@@ -55,7 +65,7 @@ function DeleteStudent() {
                 </div>
             </div>
             <div className='stud_search_button'>
-                    <button onClick={handleSearch}>Search</button>
+                <button onClick={handleSearch}>Search</button>
             </div>
             <div className='stud_delete_table'>
                 <table>
@@ -99,8 +109,15 @@ function DeleteStudent() {
                     </tbody>
                 </table>
             </div>
-    </div>
-  )
+            {showDialog && (
+                <ConfirmationDialog
+                    message={`Are you sure you want to delete this student record?`}
+                    onConfirm={handleConfirmDelete}
+                    onCancel={handleCancelDelete}
+                />
+            )}
+        </div>
+    )
 }
 
-export default DeleteStudent
+export default DeleteStudent;
