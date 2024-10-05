@@ -1,9 +1,10 @@
 .newfee {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between; /* Adjusts the spacing between elements */
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 85%;
+  margin: auto;
   }
   
   .fee_payment {
@@ -29,4 +30,8 @@
     padding: 8px;
     border-radius: 4px;
     width: 150px; /* Adjust width as needed */
+  }
+
+  .stud_search_button button {
+    color: #379237;
   }

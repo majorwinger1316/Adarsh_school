@@ -16,6 +16,8 @@ import ClassEdit from './pages/ClassEdit';
 import DeleteStudent from './pages/DeleteStudent';
 import DeleteFee from './pages/DeleteFee';
 import NewSession from './pages/NewSession';
+import PrintFee from './pages/PrintFee';
+import PrintFeeDate from './pages/PrintFeeDate';
 import './App.css';
 
 function App() {
@@ -52,6 +54,8 @@ function App() {
             <Route path="/stud_delete" element={<DeleteStudent />} />
             <Route path="/delete_fee" element={<DeleteFee />} />
             <Route path="/new_database" element={<NewSession />} />
+            <Route path="/print_fee" element={<PrintFee />} />
+            <Route path="/print_fee_date" element={<PrintFeeDate />} />
             {/* If not logged in, navigate to '/' */}
             {!isLoggedIn && <Route path="*" element={<Navigate to="/" replace />} />}
           </Routes>

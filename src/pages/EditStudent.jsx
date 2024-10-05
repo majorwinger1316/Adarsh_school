@@ -16,7 +16,6 @@ function EditStudent() {
     const fetchStudents = async () => {
         try {
             const result = await invoke('search_students', { criteria: { name: searchName } });
-            setStudents(result);
             setFilteredStudents(result);
         } catch (error) {
             console.error('Error searching students:', error);

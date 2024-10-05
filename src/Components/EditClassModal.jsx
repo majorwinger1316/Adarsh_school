@@ -10,12 +10,12 @@ function EditClassModal({ oldClassName, onUpdate, onClose }) {
 
     const handleSubmit = async () => {
         try {
-            const updateDetails = {
+            const update = {
                 old_class_name: oldClassName,
                 new_class_name: newClassName
             };
 
-            await invoke('update_class_name', { updateDetails });
+            await invoke('update_class_name', { update });
 
             onUpdate(); // Trigger parent component update
             onClose(); // Close the modal

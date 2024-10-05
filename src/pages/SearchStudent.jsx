@@ -9,8 +9,6 @@ function SearchStudent() {
     const handleSearch = async () => {
         try {
             const response = await invoke('search_students', { criteria: { name: searchName } });
-
-            // Assuming the response is an array of students
             setFilteredStudents(response);
         } catch (error) {
             console.error('Error searching students:', error);

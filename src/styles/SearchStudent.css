@@ -1,8 +1,10 @@
 .search_stud{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 85%;
+  margin: auto;
 }
 
 .searching_stud {
@@ -39,11 +41,12 @@
   }
 
   .stud_search_button button{
-    background-color: #008DDA;
+    /* background-color: #008DDA; */
+    color: #008DDA;
   }
 
   .stud_search_button button:hover{
-    background-color: #0056b3;
+    background-color: #0f0f0f69;
   }
 
   .stud_search_table {

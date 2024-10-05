@@ -1,8 +1,10 @@
 .addclass{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 85%;
+  margin: auto;
 }
 
 .class_table table {
@@ -53,9 +55,10 @@
 
   .class_submit button{
     margin-top: 20px;
-    background-color: #379237;
+    /* background-color: #379237; */
+    color: #379237;
   }
 
   .class_submit button:hover{
-    background-color: #54B435;
+    background-color: #0f0f0f69;
   }

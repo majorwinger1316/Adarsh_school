@@ -6,14 +6,12 @@
 }
 
 .home p {
-    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     color: #EEEEEE;
     font-size: 23px;
     text-align: center;
 }
 
 .home typer {
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
     animation: typing 0.2s steps(40, end);
 }
 

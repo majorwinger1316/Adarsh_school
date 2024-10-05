@@ -37,7 +37,7 @@ function ClassEdit() {
     const handleUpdateClassName = async () => {
         try {
             await invoke('update_class_name', {
-                updateDetails: {
+                update: {
                     old_class_name: editClassName,
                     new_class_name: editClassName // Change this if needed
                 }

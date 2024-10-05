@@ -1,9 +1,10 @@
 .delete_fee{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between; /* Adjusts the spacing between elements */
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 85%;
+  margin: auto;
 }
 
 .fee_delete_table

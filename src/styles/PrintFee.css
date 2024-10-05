@@ -1,0 +1,165 @@
+.print_fee {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    width: 85%;
+    margin: auto;
+  }
+
+.print_using_scholar{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+  
+  .title {
+    text-align: center;
+  }
+  
+  .title p {
+    margin: 5px 0 20px;
+    font-size: 10px;
+  }
+  
+  .printing_area p{
+    font-size: 10px;
+    margin-bottom: -0px;
+  }
+
+  .printing_area {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    left: -20px;
+    /* border: solid;
+    padding-right:50px;
+    padding-left: 10px; */
+  }
+  
+  .searching_stud {
+    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .searching_stud input {
+    margin-bottom: 20px;
+    align-items: center;
+  }
+  
+  .login_submit {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .login_submit button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .student_details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: fit-content;
+  }
+
+  .student_details_left{
+    display: flex;
+    flex-direction: row;
+    margin-bottom: -15px;
+    text-align: left;
+  }
+
+  .student_details_left p{
+    text-indent: 10px;
+    text-align: left;
+  }
+
+  .student_details_right{
+    display: flex;
+    flex-direction: row;
+    margin-bottom: -25px;
+  }
+
+  .student_details_right p{
+    text-indent: 15px;
+    margin-bottom: -10px;
+  }
+  
+  .student_details, .fee_details {
+    margin-bottom: 30px;
+  }
+  
+  .student_details p, .fee_details p {
+    margin: 0 0 10px;
+    font-size: 10px;
+    padding-bottom: 5px;
+  }
+  
+  .student_details p {
+    margin: 5px 0;
+    display: grid;
+    max-height: 20px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    left: -50px;
+  }
+  
+  .fee_details th, td {
+    border: 0.5px solid #000;
+    font-size: 10px;
+    text-align: left;
+  }
+
+  .fee_details table tr{
+    border: 0.5px solid #000;
+    font-size: 10px;
+    text-align: left;
+  }
+
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    
+    .print_content, .print_content * {
+      visibility: visible;
+    }
+  
+    .print_content {
+      position: relative; /* Adjust as needed */
+    }
+
+    .printing_area {
+      border: 0.5px solid black;
+      margin-top: 18px;
+    }
+  
+    @page {
+      margin: 1cm; 
+      padding-right: 10px;
+    }
+
+    .fee_details {
+      margin-right: 27px;
+    }
+  }
+  
+  
+  
+  .print_button {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }

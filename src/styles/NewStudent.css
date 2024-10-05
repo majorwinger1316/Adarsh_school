@@ -1,8 +1,10 @@
 .newstudent {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  width: 85%;
+  margin: auto;
   }
   
   .stud_cred {
@@ -33,11 +35,12 @@
   }
 
   .stud_submit button{
-    background-color: #379237;
+    /* background-color: #379237; */
+    color: #379237;
   }
 
   .stud_submit button:hover{
-    background-color: #54B435;
+    background-color: #0f0f0f69;
   }
 
   .stud_class select {

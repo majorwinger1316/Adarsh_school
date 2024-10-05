@@ -22,7 +22,7 @@ function ClassSearch() {
 
     const handleSearch = async () => {
         try {
-            const result = await invoke('fetch_students_by_class', { criteria: { name: className } });
+            const result = await invoke('fetch_students_by_class', { className: className });
             setFilteredStudents(result);
         } catch (error) {
             console.error('Error fetching students:', error);
@@ -36,13 +36,14 @@ function ClassSearch() {
                 <p>Search Class Records</p>
             </div>
             <div className='new_class'>
-                <div>Class Name:</div>
+                <form>
                 <select value={className} onChange={(e) => setClassName(e.target.value)}>
                     <option value="">Select a class</option>
                     {classNames.map((name, index) => (
                         <option key={index} value={name}>{name}</option>
                     ))}
                 </select>
+                </form>
             </div>
             <div className='class_submit'>
                 <button onClick={handleSearch}>Search</button>

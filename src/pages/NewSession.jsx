@@ -1,21 +1,32 @@
 import React, { useState } from 'react';
 import { invoke } from '@tauri-apps/api/tauri';
-import "../styles/NewSession.css"
+import "../styles/NewSession.css";
 
 function NewSession() {
     const [sessionName, setSessionName] = useState('');
     const [error, setError] = useState(null); // State to store error messages
 
     const handleStartSession = async () => {
-        setError(null); // Clear previous error messages
-
         try {
-            await invoke('create_tables_in_schema', { schemaName: sessionName });
-            alert(`New database session '${sessionName}' started successfully!`);
-            setSessionName(''); // Clear input after success
+            // Validate session name (year)
+            if (!sessionName) {
+                setError('Session name cannot be empty');
+                return;
+            }
+
+            // Call backend to create new schema (database)
+            const response = await invoke('create_new_schema', { newSchemaName: sessionName });
+
+            // Handle success response
+            if (response.success) {
+                alert(`New session (${sessionName}) created successfully!`);
+                setError(null); // Clear any previous errors
+            } else {
+                setError(response.message || 'Failed to create new session');
+            }
         } catch (error) {
-            console.error('Error starting new session:', error);
-            setError('Failed to start new session. Please try again.'); // Set error message
+            console.error('Error creating new session:', error);
+            setError('Failed to perform operation. Please try again later.');
         }
     };
 

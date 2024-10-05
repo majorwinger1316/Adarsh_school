@@ -38,7 +38,8 @@ function SideBar() {
         <li><Link to={`/class_add?schema=${selectedSchema}`} className='button1'><NoteAddIcon />Add a Class</Link></li>
         <li><Link to={`/class_search?schema=${selectedSchema}`} className='button'><PageviewIcon />Find Class Records</Link></li>
         <li><Link to={`/class_edit?schema=${selectedSchema}`} className='button'><BorderColorIcon />Edit Class name</Link></li>
-        <li><Link to={`/print_fee?schema=${selectedSchema}`} className='button1'><PrintIcon />Print Fee slip</Link></li>
+        <li><Link to={`/print_fee?schema=${selectedSchema}`} className='button1'><PrintIcon />Print by Scholar Number</Link></li>
+        <li><Link to={`/print_fee_date?schema=${selectedSchema}`} className='button1'><PrintIcon />Print by Date</Link></li>
         <li><Link to={`/stud_delete?schema=${selectedSchema}`} className='button2'><PersonRemoveIcon />Delete Student Record</Link></li>
         <li><Link to={`/delete_fee?schema=${selectedSchema}`} className='button2'><DeleteIcon />Delete a Fee Record</Link></li>
         <li><Link to={`/new_database?schema=${selectedSchema}`} className='button'><AddIcon />New Session</Link></li>

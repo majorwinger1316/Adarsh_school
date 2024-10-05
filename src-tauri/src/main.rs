@@ -182,6 +182,44 @@ async fn search_students(criteria: SearchCriteria, state: tauri::State<'_, AppSt
     Ok(query_result)
 }
 
+
+#[derive(serde::Serialize, sqlx::FromRow)]
+struct StudentDetails {
+    name: String,
+    dob: String,
+    scholar_number: i32,
+    ClassName: String,
+    father_name: String,
+    mother_name: String,
+    address: String,
+    mobile_num: String,
+}
+
+#[tauri::command]
+async fn fetch_student_by_scholar_number(scholar_number: i32, state: tauri::State<'_, AppState>) -> Result<StudentDetails, String> {
+    let selected_schema = match fetch_selected_schema().await {
+        Ok(schema) => schema.replace("\"", ""), // Remove double quotes
+        Err(err) => return Err(err.to_string()),
+    };
+
+    let pool = &state.db_pool;
+
+    let query = format!(
+        "SELECT name, dob, scholar_number, ClassName, father_name, mother_name, address, mobile_num
+         FROM `{}`.Students
+         WHERE scholar_number = ?",
+        selected_schema
+    );
+
+    let query_result = sqlx::query_as::<_, StudentDetails>(&query)
+        .bind(scholar_number)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(query_result)
+}
+
 #[tauri::command]
 async fn update_student(updated_student: Student, state: tauri::State<'_, AppState>) -> Result<(), String> {
     let selected_schema = match fetch_selected_schema().await {
@@ -417,6 +455,28 @@ async fn update_class_name(update: UpdateClassName, state: tauri::State<'_, AppS
     Ok(())
 }
 
+#[tauri::command]
+async fn fetch_fee_by_date_range(start_date: String, end_date: String, state: tauri::State<'_, AppState>) -> Result<Vec<FeeRecord>, String> {
+    let selected_schema = fetch_selected_schema().await.unwrap_or_else(|_| "default_schema".to_string()).replace("\"", ""); // Remove double quotes
+    let pool = &state.db_pool;
+    
+    let query = format!(
+        "SELECT invoice_number, scholar_number, admission_fee, tution_fee, exam_fee, annual_charges, total_fee, date
+         FROM `{}`.Fees
+         WHERE date BETWEEN ? AND ?",
+        selected_schema
+    );
+    
+    let fee_records: Vec<FeeRecord> = sqlx::query_as(&query)
+        .bind(start_date)
+        .bind(end_date)
+        .fetch_all(pool)
+        .await
+        .map_err(|e| e.to_string())?;
+    
+    Ok(fee_records)
+}
+
 #[tokio::main]
 async fn main() {
     tauri::Builder::default()
@@ -436,7 +496,9 @@ async fn main() {
             fetch_students_by_class,
             update_class_name,
             delete_student,
-            delete_fee
+            delete_fee,
+            fetch_student_by_scholar_number,
+            fetch_fee_by_date_range
         ])
         .setup(|app| {
             let main_window = app.get_window("main").unwrap();
