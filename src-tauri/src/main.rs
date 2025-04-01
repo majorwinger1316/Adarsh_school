@@ -4,6 +4,7 @@ use sqlx::{FromRow, Row};
 use dotenv::dotenv;
 use std::env;
 use tauri::Manager;
+use std::process::Command;
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 struct Schema {
@@ -43,6 +44,94 @@ async fn fetch_schemas(state: tauri::State<'_, AppState>) -> Result<Vec<Schema>,
 
     Ok(schemas)
 }
+
+#[tauri::command]
+async fn ensure_current_year_schema(state: tauri::State<'_, AppState>) -> Result<String, String> {
+    use chrono::{Utc, Datelike};
+    let current_year = Utc::now().year().to_string();
+    let pool = &state.db_pool;
+
+    println!("🔍 Checking if schema `{}` exists...", current_year);
+
+    let query = "SHOW DATABASES";
+    let schemas: Vec<String> = match sqlx::query(query).fetch_all(pool).await {
+        Ok(rows) => {
+            println!("✅ Databases fetched successfully.");
+            rows.iter().map(|row| row.get::<String, _>(0).to_lowercase()).collect()
+        }
+        Err(e) => {
+            eprintln!("❌ Error fetching databases: {}", e);
+            return Err(format!("Failed to fetch databases: {}", e));
+        }
+    };
+
+    if !schemas.contains(&current_year.to_lowercase()) {
+        let create_db_query = format!("CREATE DATABASE `{}`", current_year);
+        println!("🛠️ Attempting to create database `{}`...", current_year);
+
+        if let Err(e) = sqlx::query(&create_db_query).execute(pool).await {
+            eprintln!("❌ Error creating database `{}`: {}", current_year, e);
+            return Err(format!("Failed to create database `{}`: {}", current_year, e));
+        }
+
+        println!("✅ Database `{}` created successfully.", current_year);
+    } else {
+        println!("✅ Schema `{}` already exists.", current_year);
+    }
+
+    // Now create required tables
+    let tables_queries = vec![
+        format!(
+            "CREATE TABLE IF NOT EXISTS `{}`.Classes (
+                ClassID INT AUTO_INCREMENT PRIMARY KEY,
+                ClassName VARCHAR(255) NOT NULL UNIQUE
+            )", 
+            current_year
+        ),
+        format!(
+            "CREATE TABLE IF NOT EXISTS `{}`.Students (
+                StudentID INT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                dob VARCHAR(255) NOT NULL,
+                scholar_number INT NOT NULL UNIQUE,
+                ClassName VARCHAR(255) NOT NULL,
+                father_name VARCHAR(255),
+                mother_name VARCHAR(255),
+                address TEXT,
+                mobile_num VARCHAR(20),
+                FOREIGN KEY (ClassName) REFERENCES `{}`.Classes(ClassName) 
+                ON DELETE CASCADE 
+                ON UPDATE CASCADE
+            )", 
+            current_year, current_year
+        ),
+        format!(
+            "CREATE TABLE IF NOT EXISTS `{}`.Fees (
+                invoice_number INT AUTO_INCREMENT PRIMARY KEY,
+                scholar_number INT NOT NULL,
+                admission_fee INT NOT NULL,
+                tution_fee INT NOT NULL,
+                exam_fee INT NOT NULL,
+                annual_charges INT NOT NULL,
+                total_fee INT NOT NULL,
+                date VARCHAR(255) NOT NULL,
+                FOREIGN KEY (scholar_number) REFERENCES `{}`.Students(scholar_number) ON DELETE CASCADE
+            )", 
+            current_year, current_year
+        )
+    ];
+
+    for query in tables_queries {
+        if let Err(e) = sqlx::query(&query).execute(pool).await {
+            eprintln!("❌ Error creating table: {}", e);
+            return Err(format!("Failed to create necessary tables: {}", e));
+        }
+    }
+
+    println!("✅ All necessary tables are created in `{}` schema.", current_year);
+    Ok("Schema and tables ensured".to_string())
+}
+
 
 #[tauri::command]
 async fn set_selected_schema(schema: String) -> Result<(), String> {
@@ -157,27 +246,39 @@ struct SearchCriteria {
 
 #[tauri::command]
 async fn search_students(criteria: SearchCriteria, state: tauri::State<'_, AppState>) -> Result<Vec<Student>, String> {
+    // Get and sanitize the selected schema
     let selected_schema = match fetch_selected_schema().await {
         Ok(schema) => schema.replace("\"", ""), // Remove double quotes
         Err(err) => return Err(err.to_string()),
     };
 
+    println!("Using schema: {}", selected_schema);
+
     let pool = &state.db_pool;
 
+    // Use LOWER() for case-insensitive matching on both sides of the LIKE operator.
     let query = format!(
         "SELECT name, dob, scholar_number, ClassName, father_name, mother_name, address, mobile_num
          FROM `{}`.Students
-         WHERE name LIKE ?",
+         WHERE LOWER(name) LIKE LOWER(?)",
         selected_schema
     );
 
+    // Use the provided search term or default to empty string (which yields all records)
     let search_param = format!("%{}%", criteria.name.unwrap_or_default());
 
+    println!("Searching for: {}", search_param);
+
     let query_result = sqlx::query_as::<_, Student>(&query)
-        .bind(search_param)
-        .fetch_all(pool)
-        .await
-        .map_err(|e| e.to_string())?;
+    .bind(search_param)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| {
+        println!("SQL Error: {}", e);
+        e.to_string()
+    })?;
+
+    println!("Found {} matching records", query_result.len());
 
     Ok(query_result)
 }
@@ -434,23 +535,56 @@ struct UpdateClassName {
 #[tauri::command]
 async fn update_class_name(update: UpdateClassName, state: tauri::State<'_, AppState>) -> Result<(), String> {
     let selected_schema = match fetch_selected_schema().await {
-        Ok(schema) => schema.replace("\"", ""), // Remove double quotes
+        Ok(schema) => schema.replace("\"", ""),
         Err(err) => return Err(err.to_string()),
     };
 
     let pool = &state.db_pool;
 
-    let query = format!(
-        "UPDATE `{}`.Classes SET ClassName =? WHERE ClassName =?",
-        selected_schema
-    );
+    // Start transaction
+    let mut tx = pool.begin().await.map_err(|e| e.to_string())?;
 
-    sqlx::query(&query)
-       .bind(&update.new_class_name)
-       .bind(&update.old_class_name)
-       .execute(pool)
-       .await
-       .map_err(|e| e.to_string())?;
+    // 1. Verify the old class exists
+    let class_exists: bool = sqlx::query_scalar(&format!(
+        "SELECT EXISTS(SELECT 1 FROM `{}`.Classes WHERE ClassName = ?)",
+        selected_schema
+    ))
+    .bind(&update.old_class_name)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if !class_exists {
+        return Err(format!("Class '{}' does not exist", update.old_class_name));
+    }
+
+    // 2. Check if new class name already exists
+    let new_class_exists: bool = sqlx::query_scalar(&format!(
+        "SELECT EXISTS(SELECT 1 FROM `{}`.Classes WHERE ClassName = ?)",
+        selected_schema
+    ))
+    .bind(&update.new_class_name)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    if new_class_exists {
+        return Err(format!("Class '{}' already exists", update.new_class_name));
+    }
+
+    // 3. Update the class name
+    sqlx::query(&format!(
+        "UPDATE `{}`.Classes SET ClassName = ? WHERE ClassName = ?",
+        selected_schema
+    ))
+    .bind(&update.new_class_name)
+    .bind(&update.old_class_name)
+    .execute(&mut *tx)
+    .await
+    .map_err(|e| e.to_string())?;
+
+    // 4. Commit transaction
+    tx.commit().await.map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -477,6 +611,14 @@ async fn fetch_fee_by_date_range(start_date: String, end_date: String, state: ta
     Ok(fee_records)
 }
 
+#[tauri::command]
+fn init_mysql() {
+    std::process::Command::new("cmd")
+        .args(&["/C", "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqld.exe", "--console"])
+        .spawn()
+        .expect("Failed to start MySQL");
+}
+
 #[tokio::main]
 async fn main() {
     tauri::Builder::default()
@@ -498,7 +640,9 @@ async fn main() {
             delete_student,
             delete_fee,
             fetch_student_by_scholar_number,
-            fetch_fee_by_date_range
+            fetch_fee_by_date_range,
+            ensure_current_year_schema,
+            init_mysql
         ])
         .setup(|app| {
             let main_window = app.get_window("main").unwrap();
@@ -507,6 +651,16 @@ async fn main() {
                     std::env::set_var("SELECTED_SCHEMA", schema);
                 }
             });
+            std::thread::spawn(|| {
+                Command::new("node")
+                  .arg("scripts/init-mysql.js")
+                  .spawn()
+                  .expect("Failed to start MySQL");
+              });
+              #[cfg(debug_assertions)]
+              println!("DEV MODE");
+              #[cfg(not(debug_assertions))]
+              println!("PROD MODE");
             Ok(())
         })
         .run(tauri::generate_context!())
