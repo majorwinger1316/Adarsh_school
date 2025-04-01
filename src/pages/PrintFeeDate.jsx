@@ -17,15 +17,48 @@ function PrintFeeDate() {
     };
 
     const printReceipt = () => {
+        // Hide everything except the printing area
+        const originalStyles = document.querySelectorAll('style, link[rel="stylesheet"]');
+        originalStyles.forEach(style => style.setAttribute('media', 'not print'));
+        
+        // Create print-specific styles
+        const printStyle = document.createElement('style');
+        printStyle.innerHTML = `
+            @page { size: auto; margin: 5mm; }
+            body { margin: 0; padding: 0; background: white; }
+            .no-print { display: none !important; }
+            table { page-break-inside: avoid; width: 100%; }
+            tr { page-break-inside: avoid; }
+            .printing_area1 { 
+                position: relative; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                margin: 0; 
+                padding: 0; 
+                border: none; 
+            }
+            table th, table td { 
+                padding: 2px 4px; 
+                font-size: 10px; 
+                height: auto; 
+            }
+        `;
+        document.head.appendChild(printStyle);
+        
         window.print();
+        
+        // Restore original styles
+        originalStyles.forEach(style => style.removeAttribute('media'));
+        printStyle.remove();
     };
 
     return (
         <div className='print_using_date'>
-            <div className='title'>
+            <div className='title no-print'>
                 <p>Print using Dates</p>
             </div>
-            <div className='searching_stud'>
+            <div className='searching_stud no-print'>
                 <input
                     type="date"
                     value={startDate}
@@ -37,7 +70,7 @@ function PrintFeeDate() {
                     onChange={(e) => setEndDate(e.target.value)}
                 />
             </div>
-            <div className='login_submit'>
+            <div className='login_submit no-print'>
                 <button onClick={fetchDetailsByDateRange}>Fetch Details</button>
             </div>
             <div className='printing_area1'>
@@ -47,7 +80,7 @@ function PrintFeeDate() {
                         <p>Statement</p>
                         <table>
                             <thead>
-                                <tr className='small'>
+                                <tr>
                                     <th>Date</th>
                                     <th>Invoice Number</th>
                                     <th>Admission Fee</th>
@@ -58,8 +91,8 @@ function PrintFeeDate() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {feeRecords1.map((record1, index) => (
-                                    <tr key={record1.invoice_number} className='small'>
+                                {feeRecords1.map((record1) => (
+                                    <tr key={record1.invoice_number}>
                                         <td>{record1.date}</td>
                                         <td>{record1.invoice_number}</td>
                                         <td>{record1.admission_fee}</td>
@@ -74,7 +107,7 @@ function PrintFeeDate() {
                     </div>
                 )}
             </div>
-            <div className='print_button'>
+            <div className='print_button no-print'>
                 <button onClick={printReceipt}>Print Receipt</button>
             </div>
         </div>
