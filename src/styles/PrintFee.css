@@ -38,6 +38,11 @@
     padding-right:50px;
     padding-left: 10px; */
   }
+
+  .printing_area {
+    padding: 0;
+    margin: 0;
+  }
   
   .searching_stud {
     margin-bottom: 20px;
@@ -113,7 +118,12 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    left: -50px;
+    font-size: 10px;
+  }
+
+  th, td {
+    padding: 2px 4px;
+    border: 1px solid #000;
   }
   
   .fee_details th, td {
@@ -133,26 +143,39 @@
       visibility: hidden;
     }
     
-    .print_content, .print_content * {
+    .printing_area, .printing_area * {
       visibility: visible;
     }
   
-    .print_content {
-      position: relative; /* Adjust as needed */
-    }
-
     .printing_area {
-      border: 0.5px solid black;
-      margin-top: 18px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      border: none;
     }
   
     @page {
-      margin: 1cm; 
-      padding-right: 10px;
+      size: auto;   /* auto is the initial value */
+      margin: 5mm;  /* this affects the margin in the printer settings */
     }
-
-    .fee_details {
-      margin-right: 27px;
+  
+    /* Prevent table from breaking across pages */
+    table {
+      page-break-inside: auto;
+    }
+    
+    tr {
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+    
+    /* Remove any extra margins/padding */
+    body {
+      padding: 0;
+      margin: 0;
     }
   }
   
