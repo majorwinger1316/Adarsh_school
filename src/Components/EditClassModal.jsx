@@ -1,27 +1,45 @@
 import React, { useState } from 'react';
-import { invoke } from '@tauri-apps/api/tauri'; // Import the invoke function from Tauri
+import { invoke } from '@tauri-apps/api/tauri';
 
 function EditClassModal({ oldClassName, onUpdate, onClose }) {
     const [newClassName, setNewClassName] = useState(oldClassName);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [error, setError] = useState('');
 
     const handleInputChange = (e) => {
         setNewClassName(e.target.value);
+        setError(''); // Clear error when user types
     };
 
     const handleSubmit = async () => {
+        if (!newClassName.trim()) {
+            setError('Class name cannot be empty');
+            return;
+        }
+
+        if (newClassName === oldClassName) {
+            onClose();
+            return;
+        }
+
+        setIsUpdating(true);
+        setError('');
+
         try {
-            const update = {
-                old_class_name: oldClassName,
-                new_class_name: newClassName
-            };
-
-            await invoke('update_class_name', { update });
-
-            onUpdate(); // Trigger parent component update
-            onClose(); // Close the modal
+            await invoke('update_class_name', {
+                update: {
+                    old_class_name: oldClassName,
+                    new_class_name: newClassName
+                }
+            });
+            await onUpdate();
+            onClose();
         } catch (error) {
-            console.error('Error updating class name:', error);
-            alert('Failed to update class name.');
+            if (error.includes('1451')) {
+                setError('Cannot update class name because it has students assigned. Please contact admin.');
+            } else {
+                setError(`Failed to update: ${error}`);
+            }
         }
     };
 
@@ -29,16 +47,36 @@ function EditClassModal({ oldClassName, onUpdate, onClose }) {
         <div className='modal'>
             <div className='modal-content'>
                 <span className='close' onClick={onClose}>&times;</span>
+                <h2>Edit Class Name</h2>
+                
                 <div className='form-group'>
-                    <label>Edit Class Name:</label>
+                    <label>Current Name:</label>
+                    <input
+                        type="text"
+                        value={oldClassName}
+                        readOnly
+                    />
+                </div>
+
+                <div className='form-group'>
+                    <label>New Name:</label>
                     <input
                         type="text"
                         value={newClassName}
                         onChange={handleInputChange}
+                        disabled={isUpdating}
                     />
                 </div>
-                <div className='form-group'>
-                    <button onClick={handleSubmit}>Update</button>
+
+                {error && <div className="error-message">{error}</div>}
+
+                <div className='form-actions'>
+                    <button 
+                        onClick={handleSubmit}
+                        disabled={isUpdating || !newClassName.trim()}
+                    >
+                        {isUpdating ? 'Updating...' : 'Update'}
+                    </button>
                 </div>
             </div>
         </div>
