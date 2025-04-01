@@ -34,23 +34,35 @@ function ClassEdit() {
         openModal();
     };
 
-    const handleUpdateClassName = async () => {
+    const handleUpdateClassName = async (newClassName) => {
         try {
-            await invoke('update_class_name', {
-                update: {
-                    old_class_name: editClassName,
-                    new_class_name: editClassName // Change this if needed
-                }
-            });
-            closeModal();
-            const updatedClasses = classNames.map(classObj =>
-                classObj.class_name === editClassName ? { ...classObj, class_name: editClassName } : classObj
-            );
-            setClassNames(updatedClasses);
-            alert('Class name updated successfully!');
+          await invoke('update_class_name', {
+            update: {
+              old_class_name: editClassName,
+              new_class_name: newClassName
+            }
+          });
+          
+          closeModal();
+          
+          // Refresh the class list
+          const result = await invoke('fetch_classes');
+          setClassNames(result);
+          
+          alert('Class name updated successfully!');
         } catch (error) {
-            console.error('Error updating class name:', error);
-            alert('Failed to update class name.');
+          console.error('Error updating class name:', error);
+          alert('Failed to update class name: ' + error);
+        }
+      };
+
+      const handleUpdate = async () => {
+        try {
+            const result = await invoke('fetch_classes');
+            setClassNames(result);
+        } catch (error) {
+            console.error('Error refreshing classes:', error);
+            alert('Failed to refresh class list');
         }
     };
 
@@ -82,7 +94,7 @@ function ClassEdit() {
             {isModalOpen && (
                 <EditClassModal
                     oldClassName={editClassName}
-                    onUpdate={handleUpdateClassName}
+                    onUpdate={handleUpdate}
                     onClose={closeModal}
                 />
             )}
